@@ -74,8 +74,8 @@ if (result.error)
 
 <table >
 <tr>
-<th><img width="451" height="1"><p><strong>❌ depressing</strong></p></th>
-<th><img width="451" height="1"><p><strong>✅ awesome</strong></p></th>
+<th><p><strong>❌ depressing</strong></p></th>
+<th><p><strong>✅ awesome</strong></p></th>
 </tr>
 <tr>
 <td>
