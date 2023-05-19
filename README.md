@@ -273,10 +273,11 @@ class CustomError extends Error {}
 
 async function fetchData() {
   const service = new DataService();
-  const [[data, error]] = await resguard(service.getItems(), CustomError);
+  const [[data, error]] = await resguard(() => throw new CustomError('damn!'), CustomError);
 
   if (error) {
     console.error("Custom Error:", error);
+    console.log(error instanceof CustomError) // true
     return;
   }
 
