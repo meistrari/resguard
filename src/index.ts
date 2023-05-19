@@ -4,7 +4,7 @@ class TryResult<T extends any | null, E extends Error | null> {
     }
 
     public data: T | null
-    public error: Error | null
+    public error: E | null
 
     constructor(data: T, error: E | null) {
         this.data = data
