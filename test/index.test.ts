@@ -102,3 +102,59 @@ describe('should', () => {
         expectTypeOf(error).toEqualTypeOf<CustomError | null>()
     })
 })
+
+describe('misc tests', () => {
+    it('should work with json parsing', async () => {
+        const result = await resguard(() => {
+            return JSON.parse('{"test": 1}')
+        })
+        expect(result.data).toEqual({ test: 1 })
+        expect(result.error).toBe(null)
+        if (!result.error)
+            expectTypeOf(result.data).toEqualTypeOf<any>()
+    })
+
+    it('should work with json parsing with error', async () => {
+        const result = await resguard(() => {
+            return JSON.parse('{test: 1}')
+        })
+        expect(result.data).toBe(null)
+        expect(result.error).toBeInstanceOf(SyntaxError)
+        expectTypeOf(result.data).toMatchTypeOf<null>()
+    })
+
+    it('should enable type override', async () => {
+        let result = await resguard<{ test: number }>(() => {
+            return JSON.parse('{test: 1}')
+        }, SyntaxError)
+        expect(result.data).toBe(null)
+        expect(result.error).toBeInstanceOf(SyntaxError)
+        if (result.data)
+            expectTypeOf(result.data).toEqualTypeOf<{ test: number }>()
+        else
+            expectTypeOf(result.data).toMatchTypeOf<null>()
+
+        result = await resguard<{ test: number }>(() => {
+            return JSON.parse('{"test": 1}')
+        })
+        expect(result.data).toEqual({ test: 1 })
+        expect(result.error).toBe(null)
+        if (result.data)
+            expectTypeOf(result.data).toEqualTypeOf<{ test: number }>()
+        else
+            expectTypeOf(result.data).toMatchTypeOf<null>()
+    })
+
+    it('should enable go-like error handling', async () => {
+        let [[dataA, error]] = await resguard(() => 1)
+        expect(dataA).toBe(1)
+        expect(error).toBe(null)
+        expectTypeOf(dataA).toEqualTypeOf<number | null>()
+
+        ;[[, error]] = await resguard<string>(() => {
+            throw new Error('test')
+        })
+        expect(error).toBeInstanceOf(Error)
+        expect(error?.message).toBe('test')
+    })
+})

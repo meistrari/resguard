@@ -71,6 +71,177 @@ if (result.error)
 ```
 <sup><strong>`resguard` can also be used with async functions.</strong></sup>
 
+
+<table >
+<tr>
+<th><img width="451" height="1"><p><strong>❌ depressing</strong></p></th>
+<th><img width="451" height="1"><p><strong>✅ awesome</strong></p></th>
+</tr>
+<tr>
+<td>
+
+```typescript
+let result
+
+try {
+    result = await client.getItems()
+} catch (error) {
+    handle(error)
+}
+```
+</td>
+<td>
+
+```typescript
+const result = await resguard(client.getItems())
+if (result.error) 
+    handle(result.error)
+```
+
+</td>
+</tr>
+<tr><td></td><td></td></tr>
+<tr>
+<td>
+
+```typescript
+let result
+
+try {
+    result = await client.longRequest()
+} catch (e: any) {
+    const error: ClientError = e
+    if (error.code === 'TIMEOUT')
+      handleTimeout()
+}
+```
+
+</td>
+<td>
+
+```typescript
+const result = await resguard(client.longRequest(), ClientError)
+if (result.error) {
+    if (error.code === 'TIMEOUT')
+      handleTimeout()
+}
+```
+
+</td>
+</tr>
+
+<tr><td></td><td></td></tr>
+
+<tr>
+<td>
+
+```typescript
+let result
+try {
+  result = JSON.parse(data)
+} catch (e: any) {
+  const error: SyntaxError = e
+  handle(error)
+}
+```
+
+</td>
+<td>
+
+```typescript
+const result = await resguard(() => JSON.parse(data), SyntaxError)
+if (result.error) 
+    handle(result.error)
+```
+
+</td>
+</tr>
+
+<tr><td></td><td></td></tr>
+
+<tr>
+<td>
+
+```typescript
+let data: { test: number }
+
+try {
+  data = JSON.parse('{ test: 1 }')
+} catch (e: any) {
+  const error: SyntaxError = e
+  handle(error)
+}
+
+console.log(data.test)
+```
+
+</td>
+<td>
+
+```typescript
+const { data, error } = await resguard<{ test: number}>(
+    () => JSON.parse('{ test: 1 }'), 
+    SyntaxError
+)
+
+if (error) 
+    handle(error)
+
+console.log(data.test)
+```
+</td>
+</tr>
+
+<tr><td></td><td></td></tr>
+
+<tr>
+<td>
+
+```typescript
+async function complexFunction() {
+  let items
+  try {
+    items = await client.getItems()
+  } catch (e: any) {
+    const error: ClientError = e
+    handle(error)
+  }
+
+  let updated
+  try {
+    updated = await client.updateItems(items)
+  } catch (e: any) {
+    const error: ClientError = e
+    handle(error)
+  }
+
+  return updated
+}
+```
+
+</td>
+<td>
+
+```typescript
+async function complexFunction() {
+  const items = await resguard(client.getItems(), ClientError)
+  if (items.error) 
+    handle(items.error)
+
+  const updatedItems = await resguard(client.updateItems(items), ClientError)
+  if (updatedItems.error) 
+    handle(updatedItems.error)
+
+  return updatedItems.data
+}
+```
+
+</td>
+</tr>
+
+</table>
+
+
 ## using tuples
 
 resguard can also return a tuple with data and error values:

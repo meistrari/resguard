@@ -12,10 +12,10 @@ class TryResult<T extends any | null, E extends Error | null> {
     }
 }
 
-export async function resguard<T, E extends ErrorClass>(
+export async function resguard<T, E extends ErrorClass = ErrorClass>(
     promiseOrFunction: Promise<T> | (() => (T | Promise<T>)),
     _errorType?: E,
-): Promise<TryResult<T | null, InstanceType<E> | null>> {
+): Promise<TryResult<(T | null), InstanceType<E> | null>> {
     try {
         if (typeof promiseOrFunction === 'function') {
             const result = promiseOrFunction()
