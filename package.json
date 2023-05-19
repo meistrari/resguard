@@ -2,6 +2,7 @@
   "name": "resguard",
   "type": "module",
   "version": "1.0.0",
+  "packageManager": "pnpm@8.1.1",
   "description": "",
   "author": "Henrique Cunha <henrycunh@gmail.com>",
   "license": "MIT",
