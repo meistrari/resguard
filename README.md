@@ -29,11 +29,11 @@ import { resguard } from 'resguard'
 async function fetchData() {
     const client = new APIClient()
 
-    const items = await resguard(client.getItems())
-    if (items.error) 
-        handle(items.error)
+    const { data, error } = await resguard(client.getItems())
+    if (error) 
+        handle(error)
     
-    const updated = await resguard(client.updateItems(items.data))
+    const updated = await resguard(client.updateItems(data))
     if (updated.error) 
         handle(updated.error)
 
@@ -41,6 +41,7 @@ async function fetchData() {
 }
 ```
 <sup><strong>Both the `data` and `error` properties of the result are correctly typed</strong></sup>
+
 
 ```typescript
 import { resguard } from 'resguard'
