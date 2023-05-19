@@ -13,15 +13,20 @@ class TryResult<T extends any | null, E extends Error | null> {
 }
 
 export async function resguard<T, E extends ErrorClass>(
-    promise: Promise<T> | (() => T),
+    promiseOrFunction: Promise<T> | (() => (T | Promise<T>)),
     _errorType?: E,
 ): Promise<TryResult<T | null, InstanceType<E> | null>> {
     try {
-        if (typeof promise === 'function')
-            return new TryResult(promise(), null)
-
-        else
-            return new TryResult(await promise, null)
+        if (typeof promiseOrFunction === 'function') {
+            const result = promiseOrFunction()
+            if (result instanceof Promise)
+                return new TryResult(await result, null)
+            else
+                return new TryResult(result, null)
+        }
+        else {
+            return new TryResult(await promiseOrFunction, null)
+        }
     }
     catch (e: any) {
         return new TryResult(null, e as InstanceType<E>)

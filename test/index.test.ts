@@ -47,4 +47,58 @@ describe('should', () => {
         expect(error?.message).toBe('test')
         expectTypeOf(error).toEqualTypeOf<CustomError | null>()
     })
+
+    it('supports using a function instead of a promise', async () => {
+        const [[data, error]] = await resguard(() => 1)
+        expect(data).toBe(1)
+        expect(error).toBe(null)
+        expectTypeOf(data).toEqualTypeOf<number | null>()
+    })
+
+    it('supports using a function instead of a promise with error', async () => {
+        const [[data, error]] = await resguard(() => {
+            throw new Error('test')
+        })
+        expect(data).toBe(null)
+        expect(error).toBeInstanceOf(Error)
+        expect(error?.message).toBe('test')
+        expectTypeOf(data).toEqualTypeOf<null>()
+    })
+
+    it('supports using a function instead of a promise with overrided error type', async () => {
+        class CustomError extends Error {}
+        const [[, error]] = await resguard(() => {
+            throw new CustomError('test')
+        }, CustomError)
+        expect(error).toBeInstanceOf(CustomError)
+        expect(error?.message).toBe('test')
+        expectTypeOf(error).toEqualTypeOf<CustomError | null>()
+    })
+
+    it('supports using a function that returns a promise', async () => {
+        const [[data, error]] = await resguard(async () => 1)
+        expect(data).toBe(1)
+        expect(error).toBe(null)
+        expectTypeOf(data).toEqualTypeOf<number | null>()
+    })
+
+    it('supports using a function that returns a promise with error', async () => {
+        const [[data, error]] = await resguard(async () => {
+            throw new Error('test')
+        })
+        expect(data).toBe(null)
+        expect(error).toBeInstanceOf(Error)
+        expect(error?.message).toBe('test')
+        expectTypeOf(data).toEqualTypeOf<null>()
+    })
+
+    it('supports using a function that returns a promise with overrided error type', async () => {
+        class CustomError extends Error {}
+        const [[, error]] = await resguard(async () => {
+            throw new CustomError('test')
+        }, CustomError)
+        expect(error).toBeInstanceOf(CustomError)
+        expect(error?.message).toBe('test')
+        expectTypeOf(error).toEqualTypeOf<CustomError | null>()
+    })
 })
