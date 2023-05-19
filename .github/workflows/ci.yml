@@ -56,6 +56,26 @@ jobs:
       - name: Typecheck
         run: nr typecheck
 
+  test-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+      - name: Set node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: pnpm
+      - name: Setup
+        run: npm i -g @antfu/ni
+      - name: Install
+        run: nci
+      - name: Test
+        run: nr test:coverage
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+
   test:
     runs-on: ${{ matrix.os }}
 

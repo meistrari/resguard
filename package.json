@@ -43,6 +43,7 @@
     "release": "bumpp && npm publish",
     "start": "esno src/index.ts",
     "test": "vitest",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
@@ -50,6 +51,7 @@
     "@antfu/ni": "^0.21.2",
     "@antfu/utils": "^0.7.2",
     "@types/node": "^18.15.11",
+    "@vitest/coverage-istanbul": "^0.31.1",
     "bumpp": "^9.1.0",
     "eslint": "^8.37.0",
     "esno": "^0.16.3",

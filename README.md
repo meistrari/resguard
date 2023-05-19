@@ -1,6 +1,14 @@
+<div align=center>
+
 # 🛡️ resguard
 
-`resguard` is a lightweight and elegant package designed to simplify error handling and improve code readability when working with promises in TypeScript. It wraps promises and returns in an object or tuple containing both data and error properties, streamlining the process of handling errors and accessing resolved data. `resguard` ensures that the correct types are returned, making your TypeScript code more robust.
+[![npm version][npm-version-src]][npm-version-href]
+[![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![Codecov][codecov-src]][codecov-href]
+
+</div>
+
+`resguard` is a tiny utility that wraps promises and returns an object or tuple with `data` and `error` properties. It's useful for handling errors in async functions without having to use `try/catch` blocks.
 
 ## highlights
 
@@ -32,7 +40,7 @@ async function fetchData() {
     return updated.data
 }
 ```
-<sup>Both the `data` and `error` properties of the result are correctly typed</sup>
+<sup><strong>Both the `data` and `error` properties of the result are correctly typed</strong></sup>
 
 ```typescript
 import { resguard } from 'resguard'
@@ -47,7 +55,7 @@ const result = await resguard(() => {
 if (result.error) 
     handle(result.error)
 ```
-<sup>`resguard` can also be used with functions.</sup>
+<sup><strong>`resguard` can also be used with functions.</strong></sup>
 
 ```typescript
 import { resguard } from 'resguard'
@@ -61,9 +69,9 @@ const result = await resguard(async () => {
 if (result.error) 
     handle(result.error)
 ```
-<sup>`resguard` can also be used with async functions.</sup>
+<sup><strong>`resguard` can also be used with async functions.</strong></sup>
 
-### using tuples
+## using tuples
 
 resguard can also return a tuple with data and error values:
 
@@ -83,7 +91,7 @@ async function fetchData() {
 }
 ```
 
-### custom error handling
+## custom error handling
 
 resguard supports custom error handling by allowing you to override the error type:
 
@@ -105,3 +113,10 @@ async function fetchData() {
 }
 ```
 
+
+[npm-version-src]: https://img.shields.io/npm/v/resguard?style=flat&colorA=18181B&colorB=F0DB4F
+[npm-version-href]: https://npmjs.com/package/resguard
+[npm-downloads-src]: https://img.shields.io/npm/dm/resguard?style=flat&colorA=18181B&colorB=F0DB4F
+[npm-downloads-href]: https://npmjs.com/package/resguard
+[codecov-src]: https://img.shields.io/codecov/c/gh/henrycunh/resguard/main?style=flat&colorA=18181B&colorB=F0DB4F
+[codecov-href]: https://codecov.io/gh/henrycunh/resguard
