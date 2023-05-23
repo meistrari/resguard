@@ -12,25 +12,44 @@ class TryResult<T extends any | null, E extends Error | null> {
     }
 }
 
-export async function resguard<T, E extends ErrorClass = ErrorClass>(
-    promiseOrFunction: Promise<T> | (() => (T | Promise<T>)),
+type ErrorClass = new (...args: any[]) => Error
+
+export function resguard<T, E extends ErrorClass = ErrorClass>(
+    func: () => Promise<T>,
     _errorType?: E,
-): Promise<TryResult<(T | null), InstanceType<E> | null>> {
+): Promise<TryResult<T | null, InstanceType<E> | null>>
+export function resguard<T, E extends ErrorClass = ErrorClass>(
+    func: () => T,
+    _errorType?: E,
+): TryResult<T | null, InstanceType<E> | null>
+export function resguard<T, E extends ErrorClass = ErrorClass>(
+    promise: Promise<T>,
+    _errorType?: E,
+): Promise<TryResult<T | null, InstanceType<E> | null>>
+
+export function resguard<T, E extends ErrorClass = ErrorClass>(
+    promiseOrFunction: (() => (T | Promise<T>)) | Promise<T>,
+    _errorType?: E,
+): TryResult<T | null, InstanceType<E> | null> | Promise<TryResult<T | null, InstanceType<E> | null>> {
     try {
-        if (typeof promiseOrFunction === 'function') {
-            const result = promiseOrFunction()
-            if (result instanceof Promise)
-                return new TryResult(await result, null)
-            else
-                return new TryResult(result, null)
+        if (promiseOrFunction instanceof Promise) {
+            return promiseOrFunction
+                .then(data => new TryResult(data, null))
+                .catch(e => new TryResult(null, e as InstanceType<E>))
         }
         else {
-            return new TryResult(await promiseOrFunction, null)
+            const result = promiseOrFunction()
+            if (result instanceof Promise) {
+                return result
+                    .then(data => new TryResult(data, null))
+                    .catch(e => new TryResult(null, e as InstanceType<E>))
+            }
+            else {
+                return new TryResult(result, null)
+            }
         }
     }
-    catch (e: any) {
+    catch (e) {
         return new TryResult(null, e as InstanceType<E>)
     }
 }
-
-type ErrorClass = new (...args: any[]) => Error

@@ -46,7 +46,7 @@ async function fetchData() {
 ```typescript
 import { resguard } from 'resguard'
 
-const result = await resguard(() => {
+const result = resguard(() => {
     if (Math.random() > 0.5) 
         return true
     else 
@@ -56,7 +56,7 @@ const result = await resguard(() => {
 if (result.error) 
     handle(result.error)
 ```
-<sup><strong>`resguard` can also be used with functions.</strong></sup>
+<sup><strong>`resguard` can also be used with functions. When they are sync, the result also is!</strong></sup>
 
 ```typescript
 import { resguard } from 'resguard'
@@ -150,7 +150,7 @@ try {
 <td>
 
 ```typescript
-const result = await resguard(() => JSON.parse(data), SyntaxError)
+const result = resguard(() => JSON.parse(data), SyntaxError)
 if (result.error) 
     handle(result.error)
 ```
@@ -180,7 +180,7 @@ console.log(data.test)
 <td>
 
 ```typescript
-const { data, error } = await resguard<{ test: number}>(
+const { data, error } = resguard<{ test: number}>(
     () => JSON.parse('{ test: 1 }'), 
     SyntaxError
 )

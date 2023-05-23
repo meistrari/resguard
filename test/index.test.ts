@@ -49,7 +49,7 @@ describe('should', () => {
     })
 
     it('supports using a function instead of a promise', async () => {
-        const [[data, error]] = await resguard(() => 1)
+        const [[data, error]] = resguard(() => 1)
         expect(data).toBe(1)
         expect(error).toBe(null)
         expectTypeOf(data).toEqualTypeOf<number | null>()
@@ -62,7 +62,7 @@ describe('should', () => {
         expect(data).toBe(null)
         expect(error).toBeInstanceOf(Error)
         expect(error?.message).toBe('test')
-        expectTypeOf(data).toEqualTypeOf<null>()
+        expectTypeOf(data).toEqualTypeOf<unknown>()
     })
 
     it('supports using a function instead of a promise with overrided error type', async () => {
@@ -105,7 +105,7 @@ describe('should', () => {
 
 describe('misc tests', () => {
     it('should work with json parsing', async () => {
-        const result = await resguard(() => {
+        const result = resguard(() => {
             return JSON.parse('{"test": 1}')
         })
         expect(result.data).toEqual({ test: 1 })
@@ -115,7 +115,7 @@ describe('misc tests', () => {
     })
 
     it('should work with json parsing with error', async () => {
-        const result = await resguard(() => {
+        const result = resguard(() => {
             return JSON.parse('{test: 1}')
         })
         expect(result.data).toBe(null)
@@ -146,7 +146,7 @@ describe('misc tests', () => {
     })
 
     it('should enable go-like error handling', async () => {
-        let [[dataA, error]] = await resguard(() => 1)
+        let [[dataA, error]] = resguard(() => 1)
         expect(dataA).toBe(1)
         expect(error).toBe(null)
         expectTypeOf(dataA).toEqualTypeOf<number | null>()
