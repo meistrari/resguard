@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { resguard } from '../src'
+import { resguard, resguardFn } from '../src'
 
 describe('should', () => {
     it('be exported', () => {
@@ -101,6 +101,85 @@ describe('should', () => {
         expect(error?.message).toBe('test')
         expectTypeOf(error).toEqualTypeOf<CustomError | null>()
     })
+
+    it('support creating a resguarded function', async () => {
+        const add = (a: number, b: number) => a + b
+        const resguardedAdd = resguardFn(add)
+        const { data, error } = resguardedAdd(1, 4)
+        expect(data).toBe(5)
+        expect(error).toBe(null)
+    })
+
+    it('support creating a resguarded function with error', async () => {
+        const addOnlyEven = (a: number, b: number) => {
+            if (a % 2 === 0 && b % 2 === 0)
+                return a + b
+            throw new Error('only even numbers')
+        }
+        const resguardedAdd = resguardFn(addOnlyEven)
+        const { data, error } = resguardedAdd(1, 4)
+        expect(data).toBe(null)
+        expect(error).toBeInstanceOf(Error)
+        expect(error?.message).toBe('only even numbers')
+    })
+
+    it('support creating a resguarded function with overrided error type', async () => {
+        class CustomError extends Error {}
+        const addOnlyEven = (a: number, b: number) => {
+            if (a % 2 === 0 && b % 2 === 0)
+                return a + b
+            throw new CustomError('only even numbers')
+        }
+        const resguardedAdd = resguardFn(addOnlyEven, CustomError)
+        const { data, error } = resguardedAdd(1, 4)
+
+        expect(data).toBe(null)
+        expect(error).toBeInstanceOf(CustomError)
+        expect(error?.message).toBe('only even numbers')
+    })
+
+    it('support creating a resguarded async function', async () => {
+        const asyncAdd = async (a: number, b: number) => new Promise<number>((resolve) => {
+            setTimeout(() => resolve(a + b), 10)
+        })
+        const resguardedAdd = resguardFn(asyncAdd)
+        const { data, error } = await resguardedAdd(1, 4)
+        expect(data).toBe(5)
+        expect(error).toBe(null)
+    })
+
+    it('support creating a resguarded async function with error', async () => {
+        const asyncAddOnlyEven = async (a: number, b: number) => new Promise<number>((resolve, reject) => {
+            setTimeout(() => {
+                if (a % 2 === 0 && b % 2 === 0)
+                    resolve(a + b)
+                else
+                    reject(new Error('only even numbers'))
+            }, 10)
+        })
+        const resguardedAdd = resguardFn(asyncAddOnlyEven)
+        const { data, error } = await resguardedAdd(1, 4)
+        expect(data).toBe(null)
+        expect(error).toBeInstanceOf(Error)
+        expect(error?.message).toBe('only even numbers')
+    })
+
+    it('support creating a resguarded async function with overrided error type', async () => {
+        class CustomError extends Error {}
+        const asyncAddOnlyEven = async (a: number, b: number) => new Promise<number>((resolve, reject) => {
+            setTimeout(() => {
+                if (a % 2 === 0 && b % 2 === 0)
+                    resolve(a + b)
+                else
+                    reject(new CustomError('only even numbers'))
+            }, 10)
+        })
+        const resguardedAdd = resguardFn(asyncAddOnlyEven, CustomError)
+        const { data, error } = await resguardedAdd(1, 4)
+        expect(data).toBe(null)
+        expect(error).toBeInstanceOf(CustomError)
+        expect(error?.message).toBe('only even numbers')
+    })
 })
 
 describe('misc tests', () => {
@@ -156,5 +235,22 @@ describe('misc tests', () => {
         })
         expect(error).toBeInstanceOf(Error)
         expect(error?.message).toBe('test')
+    })
+
+    it('should enable creating a resguarded json function', async () => {
+        const safeParse = resguardFn(JSON.parse)
+        const { data, error } = safeParse('{"test": 1}')
+        expect(data).toEqual({ test: 1 })
+        expect(error).toBe(null)
+    })
+
+    it('should carry types to the resguarded function', async () => {
+        const resguardedConstFn = resguardFn(<T extends number[]>(arr: T) => arr.find(() => true))
+        const { data } = resguardedConstFn([1])
+
+        if (data !== null) {
+            expect(data).toBe(1)
+            expectTypeOf(data).toEqualTypeOf<number | undefined>()
+        }
     })
 })

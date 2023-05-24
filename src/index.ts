@@ -1,4 +1,8 @@
-class TryResult<T extends any | null, E extends Error | null> {
+type IsFunctionReturnTypePromise<T extends (...args: any[]) => any> =
+    ReturnType<T> extends Promise<infer U> ? true : false
+
+type ExactReturnType<T extends (...args: any[]) => any> = T extends (...args: any[]) => infer R ? R : never
+class TryResult<T, E extends Error | null> {
     private [Symbol.iterator] = function* (): IterableIterator<[T | null, E | null]> {
         yield [this.data, this.error]
     }
@@ -52,4 +56,27 @@ export function resguard<T, E extends ErrorClass = ErrorClass>(
     catch (e) {
         return new TryResult(null, e as InstanceType<E>)
     }
+}
+
+export function resguardFn<T extends (...args: any[]) => any, E extends ErrorClass = ErrorClass, U = any>(
+    func: T,
+    _errorType?: E,
+): (...args: Parameters<T>) =>
+    IsFunctionReturnTypePromise<T> extends true
+        ? ReturnType<T> extends Promise<infer U>
+            ? Promise<TryResult<U, InstanceType<E> | null>>
+            : never
+        : TryResult<ExactReturnType<T>, InstanceType<E> | null> {
+    const resguarded = (...argumentList: Parameters<T>) => {
+        const result = resguard(() => func(...argumentList))
+        return result
+    }
+
+    return resguarded as (
+        ...args: Parameters<T>
+    ) => IsFunctionReturnTypePromise<T> extends true
+        ? ReturnType<T> extends Promise<infer U>
+            ? Promise<TryResult<U, InstanceType<E> | null>>
+            : never
+        : TryResult<ExactReturnType<T>, InstanceType<E> | null>
 }

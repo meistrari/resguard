@@ -72,7 +72,18 @@ if (result.error)
 ```
 <sup><strong>`resguard` can also be used with async functions.</strong></sup>
 
+```typescript
+import { resguardFn } from 'resguard'
 
+const safeJSONParse = resguardFn(JSON.parse)
+
+let result = safeJSONParse('{ "test": 1 }')
+console.log(result.data) // { test: 1 }
+
+result = safeJSONParse('{ missing the other one')
+console.log(result.error) // SyntaxError: Unexpected character 'm' (1:2)
+```
+<sup><strong>`resguardFn` is a wrapper around `resguard` that takes a function as an argument and returns a function that can be called with the same arguments, but guarded.</strong></sup>
 <table >
 <tr>
 <th><p><strong>❌ depressing</strong></p></th>
