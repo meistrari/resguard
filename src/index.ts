@@ -2,39 +2,49 @@ type IsFunctionReturnTypePromise<T extends (...args: any[]) => any> =
     ReturnType<T> extends Promise<infer U> ? true : false
 
 type ExactReturnType<T extends (...args: any[]) => any> = T extends (...args: any[]) => infer R ? R : never
+
 class TryResult<T, E extends Error | null> {
-    private [Symbol.iterator] = function* (): IterableIterator<[T | null, E | null]> {
-        yield [this.data, this.error]
+    private [Symbol.iterator] = function* () {
+        yield [this.data, this.error] as ([T, null] | [null, E])
     }
 
-    public data: T | null
-    public error: E | null
+    public data: T
+    public error: E
 
-    constructor(data: T, error: E | null) {
+    constructor(data: T, error: E) {
         this.data = data
         this.error = error
     }
 }
 
+type MutuallyExclusiveTryResult<T, E extends Error | null> = TryResult<T, null> | TryResult<null, E>
+
 type ErrorClass = new (...args: any[]) => Error
+
+export function resguard<_T = never, E extends ErrorClass = ErrorClass>(
+    func: () => never,
+    _errorType?: E,
+): TryResult<never, InstanceType<E>>
 
 export function resguard<T, E extends ErrorClass = ErrorClass>(
     func: () => Promise<T>,
     _errorType?: E,
-): Promise<TryResult<T | null, InstanceType<E> | null>>
+): Promise<MutuallyExclusiveTryResult<T, InstanceType<E>>>
+
 export function resguard<T, E extends ErrorClass = ErrorClass>(
     func: () => T,
     _errorType?: E,
-): TryResult<T | null, InstanceType<E> | null>
+): MutuallyExclusiveTryResult<T, InstanceType<E>>
+
 export function resguard<T, E extends ErrorClass = ErrorClass>(
     promise: Promise<T>,
     _errorType?: E,
-): Promise<TryResult<T | null, InstanceType<E> | null>>
+): Promise<MutuallyExclusiveTryResult<T, InstanceType<E>>>
 
 export function resguard<T, E extends ErrorClass = ErrorClass>(
     promiseOrFunction: (() => (T | Promise<T>)) | Promise<T>,
     _errorType?: E,
-): TryResult<T | null, InstanceType<E> | null> | Promise<TryResult<T | null, InstanceType<E> | null>> {
+): MutuallyExclusiveTryResult<T, InstanceType<E>> | Promise<MutuallyExclusiveTryResult<T, InstanceType<E>>> {
     try {
         if (promiseOrFunction instanceof Promise) {
             return promiseOrFunction

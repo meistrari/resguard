@@ -56,23 +56,30 @@ describe('should', () => {
     })
 
     it('supports using a function instead of a promise with error', async () => {
-        const [[data, error]] = await resguard(() => {
+        const [[data, error]] = resguard(() => {
             throw new Error('test')
         })
         expect(data).toBe(null)
         expect(error).toBeInstanceOf(Error)
         expect(error?.message).toBe('test')
-        expectTypeOf(data).toEqualTypeOf<unknown>()
+        expectTypeOf(data).toEqualTypeOf<null>()
     })
 
     it('supports using a function instead of a promise with overrided error type', async () => {
-        class CustomError extends Error {}
-        const [[, error]] = await resguard(() => {
-            throw new CustomError('test')
-        }, CustomError)
-        expect(error).toBeInstanceOf(CustomError)
+        class CustomError extends Error {
+            x = 1
+            constructor(message: string) {
+                super(message)
+            }
+        }
+
+        const [[data, error]] = await resguard(async () => {
+            throw new SyntaxError('test')
+        }, SyntaxError)
+
+        expect(error).not.toBeInstanceOf(CustomError)
         expect(error?.message).toBe('test')
-        expectTypeOf(error).toEqualTypeOf<CustomError | null>()
+        expectTypeOf(error).toEqualTypeOf<SyntaxError | null>()
     })
 
     it('supports using a function that returns a promise', async () => {
@@ -251,6 +258,25 @@ describe('misc tests', () => {
         if (data !== null) {
             expect(data).toBe(1)
             expectTypeOf(data).toEqualTypeOf<number | undefined>()
+        }
+    })
+
+    it('supports this random ass publish message function', async () => {
+        const publishMessage = async () => {
+            // It fails 20% of the time
+            const failed = Math.random() * 100 + 1 <= 20
+            if (failed)
+                throw new Error('message failed')
+            return { error: false, message: 'resguard is awesome' } as const
+        }
+
+        for (const _ of Array(100)) {
+            const [[data, error]] = await resguard(publishMessage())
+
+            if (error)
+                expect(error.message).toBe('message failed')
+            else
+                expect(data?.error).toBe(false)
         }
     })
 })
