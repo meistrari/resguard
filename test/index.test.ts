@@ -65,6 +65,15 @@ describe('should', () => {
         expectTypeOf(data).toEqualTypeOf<null>()
     })
 
+    it('should catch a rejected promise', async () => {
+        const [[data, error]] = await resguard(async () => {
+            throw new Error('test')
+        })
+        expect(data).toBe(null)
+        expect(error).toBeInstanceOf(Error)
+        expect(error?.message).toBe('test')
+    })
+
     it('supports using a function instead of a promise with overrided error type', async () => {
         class CustomError extends Error {
             x = 1
